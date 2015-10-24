@@ -46,3 +46,8 @@ Attributes:
 - default (option): The index (starting with 1) of the option to be selected pressing the enter button.
 
 As an alternative to using the text attribute you can add sequence constructors within the instruction. You need to specify ecaclty one of both: either the text attribute or child nodes.
+
+## Compiling
+To compile it with eclipse you have to set the variable OXYGENXML locating the oXyen installation folder (e.g. "C:/Program Files/Oxygen XML Editor"). This needs to be done twice:
+- Eclipse Path variable: Window -> Preferences -> Java -> Build Path -> Classpath Variables
+- For the Ant Builder: Window -> Preferences -> Ant -> Runtime -> Properties
