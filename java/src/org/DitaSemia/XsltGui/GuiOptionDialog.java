@@ -65,7 +65,7 @@ public class GuiOptionDialog extends ExtensionInstruction {
     	// optionales defaultButton-Attribut
     	String defaultAtt = getAttributeValue("", "default");
         if (defaultAtt == null) {
-        	defaultAtt = "0";
+        	defaultAtt = "";
         }
         defaultOption = makeAttributeValueTemplate(defaultAtt);
 
@@ -155,11 +155,11 @@ public class GuiOptionDialog extends ExtensionInstruction {
 	            try
 	            {
 	            	final int defaultIndex = Integer.parseInt(defaultString);
-	            	defaultOption = optionList.get(defaultIndex + 1);
+	            	defaultOption = optionList.get(defaultIndex - 1);
 	            }
 	            catch (Exception e)
 	            {
-	            	throw new XPathException("The default attribute needs to be empty or contain an integer value between one and the number of options. (" + optionList.size() + ")");	
+	            	throw new XPathException("The default attribute (" + defaultString + ") needs to be empty or contain an integer value between one and the number of options. (" + optionList.size() + ")");	
 	            }
             }
             
