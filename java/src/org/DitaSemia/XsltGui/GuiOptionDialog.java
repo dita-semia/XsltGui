@@ -39,7 +39,7 @@ public class GuiOptionDialog extends ExtensionInstruction {
 	@Override
     public void prepareAttributes() throws XPathException {
     	
-    	// notwendiges title-Attribut
+    	// required title attribute
     	final String titleAtt = getAttributeValue("", "title");
         if (titleAtt == null) {
             reportAbsence("title");
@@ -47,7 +47,7 @@ public class GuiOptionDialog extends ExtensionInstruction {
         	title = makeAttributeValueTemplate(titleAtt);
         }
         
-    	// optionales text-Attribut
+    	// optional text attribute
     	String textAtt = getAttributeValue("", "text");
         if (textAtt!= null) {
         	text = makeAttributeValueTemplate(textAtt);
@@ -55,21 +55,21 @@ public class GuiOptionDialog extends ExtensionInstruction {
         	text = null;
         }
 
-    	// optionales options-Attribut
+    	// optional options attribute
     	String optionsAtt = getAttributeValue("", "options");
         if (optionsAtt == null) {
         	optionsAtt = "";
         }
         options = makeExpression(optionsAtt);
 
-    	// optionales defaultButton-Attribut
+    	// optional default attribute
     	String defaultAtt = getAttributeValue("", "default");
         if (defaultAtt == null) {
         	defaultAtt = "";
         }
         defaultOption = makeAttributeValueTemplate(defaultAtt);
 
-        // optionales icon-Attribut
+        // optional icon attribute
     	String iconAtt = getAttributeValue("", "icon");
         if (iconAtt == null) {
         	iconAtt = GuiMessageDialog.ICON_PLAIN;
@@ -81,7 +81,7 @@ public class GuiOptionDialog extends ExtensionInstruction {
     public void validate(ComponentDeclaration decl) throws XPathException {
         super.validate(decl);
         title 			= typeCheck("title", 	title);
-        options 		= typeCheck("buttons", 	options);
+        options 		= typeCheck("options", 	options);
         defaultOption 	= typeCheck("default",	defaultOption);
 
         if (text != null) {

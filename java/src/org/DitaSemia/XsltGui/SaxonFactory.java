@@ -15,6 +15,8 @@ public class SaxonFactory implements ExtensionElementFactory {
 	public Class<? extends StyleElement> getExtensionClass(String localname) {
 		if 		(localname.equals("message-dialog")) 		return GuiMessageDialog.class;
 		else if (localname.equals("option-dialog")) 		return GuiOptionDialog.class;
+		else if (localname.equals("html-dialog"))			return GuiHtmlDialog.class;
+		else if (localname.equals("test")) 					return GuiTest.class;
 		else return null;
 	}
 

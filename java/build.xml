@@ -33,5 +33,7 @@
 			<fileset  dir="bin"  includes="**/*.class"/>
 		</jar>
 
+		<delete file="${OXYGENXML}/lib/${archivename}.jar"/>
+		<copy file="${archivename}.jar" todir="${OXYGENXML}/lib"/>
 	</target>
 </project>
