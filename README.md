@@ -11,13 +11,11 @@ The samples are located in a dedicated samples folder. There is an oXygen projec
 ## Installation
 These stapes are required to use xslt-gui in your own transformation scenarios:
 
-1. Download DitaSemiaXsltGui.zip of the latest [release](https://github.com/dita-semia/XsltGui/releases).
-
 1. Make sure that saxon finds the DitaSemiaXsltGui.jar file. This can be done either by placing it in the oxygen-lib folder (and restart oxygen afterwards) or by adding the file explicitly as extension to your transformation scenario.
 
-1. You need to link the extension factory org.DitaSemia.XsltGui.SaxonExtension to a namespace in the saxon configuration. oXygen currently (v17.0) does not support this through the dialog so you have to either create your own configuration file or use the one from this project: config/saxon-xsltgui-config.xml.
+2. You need to link the extension factory org.DitaSemia.XsltGui.SaxonExtension to a namespace in the saxon configuration. oXygen currently (v17.0) does not support this through the dialog so you have to either create your own configuration file or use the one from this project: config/saxon-xsltgui-config.xml.
 
-1. Within your xsl script you need to bind this namespace to a prefix and add this prefix to the extension-element-prefixes attribut. See samples/message-dialog/message-dialog.xsl for a very simple sample.
+3. Within your xsl script you need to bind this namespace to a prefix and add this prefix to the extension-element-prefixes attribut. See samples/message-dialog/message-dialog.xsl for a very simple sample.
 
 Now you can use the new instructions.
 
