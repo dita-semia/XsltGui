@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="author-operation-html-dialog.css"?>
+<topic id="topic_jct_4fj_z5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="urn:oasis:names:tc:dita:xsd:topic.xsd">
+  <title>Title</title>
+  <body>
+		<p id="vzd_klj_z5">Some text content.</p>
+  </body>
+</topic>

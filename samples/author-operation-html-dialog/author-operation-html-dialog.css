@@ -1,0 +1,15 @@
+p:before {
+	display: block;
+	content: 
+		oxy_button(
+			action, oxy_action(
+		          name, 				'Edit', 
+		          description, 			'Edit the text content in an HTML dialog',
+		          operation, 			'ro.sync.ecss.extensions.commons.operations.XSLTOperation', 
+		          arg-sourceLocation,	'.',
+		          arg-targeLocation,	'.',
+		          arg-script,			oxy_concat(
+		          							'<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"><xsl:import href="',
+		          							oxy_url('author-operation-html-dialog.xsl'), 
+		          							'"/></xsl:stylesheet>'))); 
+}
