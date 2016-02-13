@@ -55,7 +55,7 @@
 						Thus, the dialog won't be opened again resulting in an infinite recursion.
 					-->
 					<gui:option-dialog 
-						title	= "Overwrite File?"
+						title	= "Read-only Warning"
 						text	= "The file '{$url}' is read-only."
 						icon	= "warning" 
 						options	= "('Retry', 'Abort')"
