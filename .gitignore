@@ -1,2 +1,4 @@
 *.class
 *.MF
+samples/open-generated-file/result.xhtml
+samples/open-generated-file/temp.xhtml
