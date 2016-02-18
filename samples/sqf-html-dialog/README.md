@@ -5,3 +5,4 @@ The advantage over the <sqf:user-entry> is that you can create more complex dial
 
 Currently it's not possible to add external libraries to an oXygen validation scenario (as you can do for transformation scenarios). 
 Thus, you have to copy the DitaSemiaXsltGui.jar in the oxygen lib folder so that Saxon will find it.
+After copying the file oXygen needs to be restarted.
