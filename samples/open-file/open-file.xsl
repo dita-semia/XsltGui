@@ -9,9 +9,9 @@
     
     <xsl:template match="/">
     	
-    	<gui:open-file url="{resolve-uri('test.xml')}" view="text"/>
+    	<gui:open-file url="test.xml" view="text"/>
     	
-    	<gui:open-file url="{resolve-uri('test.xhtml')}" view="author"/>
+    	<gui:open-file url="test.xhtml" view="author"/>
         
         <xsl:message>Done!</xsl:message>
         
