@@ -6,52 +6,52 @@
     extension-element-prefixes	= "gui"
     expand-text					= "yes">
     
-    <xsl:template match="/">
+	<xsl:template match="/">
         
-        <xsl:variable name="htmlResult" as="element()*">
-        	<gui:html-dialog title="HTML Dialog" properties-key="propTest">
+        <xsl:variable name="htmlResult" as="document-node()">
+        	<gui:html-dialog  block-parent="yes" resizable="true">
         		<form action="#">
         			<table>
         				<tr>
         					<td>Edit field 1</td>
         					<td>
-        						<input type="text" name="myinput1" size="20" value="Text"/>
+        						<input type="text" name="input1" size="20" value="Text"/>
         					</td>
         				</tr>
         				<tr>
         					<td>Edit field 2</td>
         					<td>
-        						<input type="text" name="myinput2" size="20" value="More Text"/>
+        						<input type="text" name="input2" size="20" value="More Text"/>
         					</td>
         				</tr>
         				<tr>
         					<td>Checkbox 1</td>
         					<td>
-        						<input type="checkbox" name="mycheckbox1" checked="1"/>
+        						<input type="checkbox" name="checkbox1" checked="1"/>
         					</td>
         				</tr>
         				<tr>
         					<td>Checkbox 2</td>
         					<td>
-        						<input type="checkbox" name="mycheckbox2"/>
+        						<input type="checkbox" name="checkbox2"/>
         					</td>
         				</tr>
         				<tr>
         					<td>Radiobutton 1</td>
         					<td>
-        						<input type="radio" name="myradio" value="radio1" checked="1"/>
+        						<input type="radio" name="radio" value="radio1" checked="1"/>
         					</td>
         				</tr>
         				<tr>
         					<td>Radiobutton 2</td>
         					<td>
-        						<input type="radio" name="myradio" value="radio2"/>
+        						<input type="radio" name="radio" value="radio2"/>
         					</td>
         				</tr>
         				<tr>
         					<td>Combobox</td>
         					<td>
-        						<select name="mycombobox"> 
+        						<select name="combobox"> 
         							<option>Option 1</option>
         							<option selected="1">Option 2</option>
         							<option>Option 3</option>
@@ -63,12 +63,12 @@
         	</gui:html-dialog>
         </xsl:variable>
     	
-    	<xsl:for-each select="$htmlResult">
+    	<xsl:for-each select="$htmlResult/*">
     		<xsl:message select="."/>	
     	</xsl:for-each>
         
         
-        <xsl:message>Done! (with {$htmlResult/self::button})</xsl:message>
+        <xsl:message>Done!</xsl:message>
         
     </xsl:template>
     

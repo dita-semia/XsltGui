@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -22,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -32,25 +35,27 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.html.HTML.Attribute;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import javax.xml.stream.XMLStreamException;
 
-import net.sf.saxon.event.SequenceOutputter;
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.SimpleExpression;
 import net.sf.saxon.expr.StaticProperty;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.om.AxisInfo;
 import net.sf.saxon.om.Item;
-import net.sf.saxon.om.NoNamespaceName;
 import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.om.Sequence;
 import net.sf.saxon.om.SequenceIterator;
-import net.sf.saxon.om.SequenceTool;
 import net.sf.saxon.query.QueryResult;
+import net.sf.saxon.s9api.BuildingStreamWriterImpl;
+import net.sf.saxon.s9api.DocumentBuilder;
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.style.Compilation;
 import net.sf.saxon.style.ComponentDeclaration;
 import net.sf.saxon.style.ExtensionInstruction;
 import net.sf.saxon.trans.XPathException;
-import net.sf.saxon.type.Untyped;
+import net.sf.saxon.value.EmptySequence;
 import net.sf.saxon.value.IntegerValue;
 import net.sf.saxon.value.StringValue;
 
@@ -61,7 +66,7 @@ import ro.sync.exml.workspace.api.options.WSOptionsStorage;
 
 public class GuiHtmlDialog extends ExtensionInstruction {
 
-//	@SuppressWarnings("unused")
+	//@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(GuiHtmlDialog.class.getName());
 	
 	Expression html;
@@ -72,18 +77,20 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 	Expression blockParent;
 	Expression cssRules;
 	Expression cssUri;
+	Expression resizable;
 	
 	public static final String DEFAULT_BUTTONS = "('OK', 'Cancel')";
 
 	@Override
     public void prepareAttributes() throws XPathException {
 		//logger.info("prepareAttributes");
+		
         //required title attribute
         String titleAtt = getAttributeValue("", "title");
         if (titleAtt != null) {
         	title = makeAttributeValueTemplate(titleAtt);
         } else {
-        	reportAbsence(titleAtt);
+        	reportAbsence("title");
         }
         //logger.info("title: " + title);
         
@@ -150,6 +157,15 @@ public class GuiHtmlDialog extends ExtensionInstruction {
         	cssUri = makeAttributeValueTemplate("");
         }
         //logger.info("cssUri: " + cssUri);
+        
+        //optional resizable attribute
+        String resizableAtt = getAttributeValue("", "resizable");
+        if (resizableAtt != null) {
+        	resizable = makeAttributeValueTemplate(resizableAtt);
+        } else {
+        	resizable = makeAttributeValueTemplate("no");
+        }
+        //logger.info("resizable: " + resizable);
     }
 
 	@Override
@@ -160,9 +176,10 @@ public class GuiHtmlDialog extends ExtensionInstruction {
         propertiesKey 	= typeCheck("properties-key", 	propertiesKey);
         buttons  		= typeCheck("buttons", 			buttons);
         size  	 		= typeCheck("size", 			size);
-        blockParent		= typeCheck("blockParent", 		blockParent);	
-        cssRules		= typeCheck("cssRules", 		cssRules);
-        cssUri			= typeCheck("cssUri", 			cssUri);
+        blockParent		= typeCheck("block-parent", 	blockParent);	
+        cssRules		= typeCheck("css-rules", 		cssRules);
+        cssUri			= typeCheck("css-uri", 			cssUri);
+        resizable 		= typeCheck("resizable",		resizable);	
        
         if (html 	!= null) {
         	html  	 = typeCheck("html", 	html);
@@ -181,7 +198,7 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 			html = compileSequenceConstructor(exec, decl, iterateAxis(AxisInfo.CHILD), false);
 		}
 	
-        return new HtmlDialogInstruction(title, size, html, propertiesKey, buttons, blockParent, cssRules, cssUri);
+        return new HtmlDialogInstruction(title, size, html, propertiesKey, buttons, blockParent, cssRules, cssUri, resizable);
     }
 
 	private static class HtmlDialogInstruction extends SimpleExpression {
@@ -194,13 +211,11 @@ public class GuiHtmlDialog extends ExtensionInstruction {
         public static final int BLOCK_PARENT	= 5;
         public static final int CSS_RULES		= 6;
         public static final int CSS_URI			= 7;
-        
-        public static final int	DEFAULT_WIDTH	= 500;
-        public static final int	DEFAULT_HEIGHT	= 500;
+        public static final int RESIZABLE		= 8;
 
     	private Document document;
     	
-    	private String pressedButton;
+    	private String pressedButton = "";
 
         public HtmlDialogInstruction(	Expression title, 
         								Expression size, 
@@ -209,9 +224,10 @@ public class GuiHtmlDialog extends ExtensionInstruction {
         								Expression buttons, 
         								Expression blockParent,
         								Expression cssRules,
-        								Expression cssUri) {
+        								Expression cssUri,
+        								Expression resizable) {
         	//logger.info("HtmlDialogInstruction: " + title + ", " + size + ", " + html + ", " + properties + ", " + buttons);
-			Expression[] subs = {title, size, html, properties, buttons, blockParent, cssRules, cssUri};
+			Expression[] subs = {title, size, html, properties, buttons, blockParent, cssRules, cssUri, resizable};
         	setArguments(subs);
         }
 
@@ -224,27 +240,56 @@ public class GuiHtmlDialog extends ExtensionInstruction {
         }
 
         public Sequence call(XPathContext context, Sequence[] arguments) throws XPathException {
-        	//logger.info("call");        	     	
-        	final String 	titleString 		= arguments[TITLE].head().getStringValue();
-        	final String 	htmlString 			= generateHtml(arguments);
-        	final String 	propertiesString 	= arguments[PROPERTIESKEY].head().getStringValue();
-        	final Dimension	size	 			= getSize(arguments);
-        	final String[] 	buttonsString 		= getButtons(arguments);
-            final boolean 	blockParent			= blocksParent(arguments);
-            final String 	cssRules			= arguments[CSS_RULES].head().getStringValue();
-            final URL cssUrl;
-            try {
-            	cssUrl	= getCssUrl(context, arguments);
-            } catch (Exception e) {
-            	throw new XPathException("Invalid URI ('" + arguments[CSS_URI].head().getStringValue());
-            }
-            
-	        showDialog(titleString, size, htmlString, propertiesString, buttonsString, blockParent, cssRules, cssUrl);
-	        
-        	return dataToXml(context);
+        	//logger.info("call"); 
+        	try {
+	        	final String 	titleString 		= arguments[TITLE].head().getStringValue();
+	        	final String 	htmlString 			= generateHtml(arguments);
+	        	final String 	propertiesString 	= arguments[PROPERTIESKEY].head().getStringValue();
+	        	final Dimension	size	 			= getSize(arguments);
+	        	final String[] 	buttonsString 		= getButtons(arguments);
+	            final boolean 	blockParent			= checkBoolean("block-parent", 	arguments[BLOCK_PARENT].head().getStringValue());
+	            final String 	cssRules			= arguments[CSS_RULES].head().getStringValue();
+	            final boolean 	resizable			= checkBoolean("resizable", 	arguments[RESIZABLE].head().getStringValue());
+	            final URL 		cssUrl;
+	            try {
+	            	cssUrl	= getCssUrl(context, arguments);
+	            } catch (Exception e) {
+	            	throw new XPathException("Invalid URI ('" + arguments[CSS_URI].head().getStringValue() + "')");
+	            }
+	            
+	            Runnable runnable = new Runnable() {
+	                @Override
+	                public void run() {
+	                	showDialog(titleString, size, htmlString, propertiesString, buttonsString, blockParent, cssRules, cssUrl, resizable);
+	                }
+	            };
+	            if (SwingUtilities.isEventDispatchThread()) {
+	              runnable.run();
+	            } else {
+	              SwingUtilities.invokeAndWait(runnable);
+	            }
+		        
+	        	return dataToXml(context);
+        	} catch (Exception e) {
+        		logger.error(e, e);
+        		return EmptySequence.getInstance();
+        	}
         }
         
-        private URL getCssUrl (XPathContext context, Sequence[] arguments) throws MalformedURLException, XPathException {
+        private boolean checkBoolean(String attribute, String value) throws XPathException {
+        	//logger.info("checkBoolean: " + attribute + ", " + value);
+        	if (value.equals("no") || value.equals("false") || value.equals("0")) {
+        		return false;
+        	} else if (value.equals("yes") || value.equals("true") || value.equals("1")) {
+        		return true;
+        	} else {
+        		throw new XPathException("Invalid value for " + attribute + " attribute ('" + value + "'). "
+        				+ "The " + attribute + " attribute must contain one of the following values: 'yes', 'true', '1', 'no', 'false', '0'");
+        	}
+        }
+        
+        private URL getCssUrl(XPathContext context, Sequence[] arguments) throws MalformedURLException, XPathException {
+        	//logger.info("getCssUrl()");
         	String cssUri = arguments[CSS_URI].head().getStringValue();
         	if (cssUri.isEmpty()) {
         		return null;
@@ -259,25 +304,13 @@ public class GuiHtmlDialog extends ExtensionInstruction {
         	}
         }
         
-        private boolean blocksParent(Sequence[] arguments) throws XPathException {
-        	//logger.info("blocksParent()");
-        	String blockParent = arguments[BLOCK_PARENT].head().getStringValue();
-        	if (blockParent.equals("yes")) {
-        		return true;
-        	} else if(blockParent.equals("no")) {
-        		return false;
-        	} else {
-        		throw new XPathException("The value '" + blockParent + "' is invalid. The block-parent attribute must contain either 'yes' or 'no'.");
-        	}
-        }
-        
         private Dimension getSize(Sequence[] arguments) throws XPathException {
         	//logger.info("getSize: " + arguments[SIZE].toString());
         	if (arguments[SIZE].head().getStringValue().isEmpty()) {
-        		return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        		return null;
         	}
-        	SequenceIterator iterator = arguments[SIZE].iterate();
-        	ArrayList<Integer> sizeList = new ArrayList<Integer>();
+        	SequenceIterator 	iterator = arguments[SIZE].iterate();
+        	ArrayList<Integer> 	sizeList = new ArrayList<Integer>();
             Item item = iterator.next();
             while (item != null) {
             	if (!(item instanceof IntegerValue)) {
@@ -338,11 +371,11 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 								String[] 	buttons, 
 								boolean 	blockParent,
 								String 		cssRules,
-								URL 		cssUrl) 	{
+								URL 		cssUrl,
+								boolean 	resizable) 	{
 			//logger.info("showDialog(" + 
-			//	title + ", " + sizeString + ", " + htmlString + ", " + properties + 
+			//	title + ", " + size + ", " + htmlString + ", " + properties + 
 			//	")");
-			
 			final Frame		frame		= (Frame)PluginWorkspaceProvider.getPluginWorkspace().getParentFrame();
 			
 			JDialog 		dialog 		= new JDialog(frame, title, true);
@@ -350,6 +383,13 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 			JPanel		 	buttonPane 	= new JPanel();
 			JScrollPane 	scrollPane 	= new JScrollPane(textPane);
 			
+			
+	        //create buttons
+	        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+	        buttonPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            addButtons(buttonPane, buttons, textPane, dialog, properties);
+            
+			//set text and stylesheet configurations in textPane
 	        textPane.setEditable(false);
 	        HTMLEditorKit kit = new HTMLEditorKit();
 	        kit.setAutoFormSubmission(false);
@@ -361,20 +401,23 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 	        textPane.setOpaque(false);
 	        scrollPane.setBorder(BorderFactory.createEmptyBorder());
 	        textPane.setDocument(doc);
-		    textPane.setText(htmlString);  
+		    textPane.setText(htmlString);
 		    
 			//check properties for predefined size
 			if (!properties.isEmpty()) {
 				size = loadState(properties, size);
 			}
 			
-	        dialog.setSize(size);
+			//configure settings of dialog
 	        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	        dialog.setLocationRelativeTo(null);
+	        dialog.setResizable(resizable);
 	        
-	        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
-	        buttonPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            addButtons(buttonPane, buttons, textPane, dialog, properties);
+	        dialog.addWindowListener(new WindowAdapter() {
+	        	@Override
+	        	public void windowClosing(WindowEvent e) {
+	        		document = textPane.getDocument();
+	        	}
+	        });
 	        
 	        if (!blockParent) {
 				frame.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
@@ -382,12 +425,20 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 			} else {
 				frame.setModalExclusionType(Dialog.ModalExclusionType.NO_EXCLUDE);
 			}
-            
-            dialog.getContentPane().add(scrollPane, BorderLayout.CENTER);
-            dialog.getContentPane().add(buttonPane, BorderLayout.PAGE_END);
+	        
+	        dialog.getContentPane().setLayout(new BorderLayout());
+	        dialog.getContentPane().add(scrollPane, BorderLayout.NORTH);
+            dialog.getContentPane().add(buttonPane, BorderLayout.SOUTH);
+	        dialog.addNotify();
+	        if (properties.isEmpty() && size == null) {
+	        	dialog.pack();
+	        } else {
+	        	dialog.setSize(size);
+	        }
+	        dialog.setLocationRelativeTo(null);
 	        dialog.setVisible(true);
 		}
-		
+
 		private void addCssRules(StyleSheet stylesheet, URL cssUrl, String cssRules) {
 			//logger.info("addCssRules: " + cssRules);
 			if (cssUrl != null) {
@@ -423,57 +474,62 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 		@SuppressWarnings("rawtypes")
 		private Sequence dataToXml(XPathContext context) throws XPathException {
 			//logger.info("dataToXml");
-			final SequenceOutputter out = context.getController().allocateSequenceOutputter(50);
-			final ElementIterator iterator = new ElementIterator(document);
-			Element element;
-			while ((element = iterator.next()) != null) {
-				final AttributeSet 	atts 	= element.getAttributes();
-				final String        name 	= (String)atts.getAttribute(Attribute.NAME);
-				final String 		value 	= (String)atts.getAttribute(Attribute.VALUE);
-				final String 		type 	= (String)atts.getAttribute(Attribute.TYPE);
-				if (name != null) {
-					final Object model = atts.getAttribute(StyleConstants.ModelAttribute);
-					//logger.info("name: '" + name + "', model: " + model);
-					if (model instanceof PlainDocument) {
-						final PlainDocument content = (PlainDocument)model; 
-						try {
-							//logger.info(name + ": '" + content.getText(0, content.getLength()) + "'");
-							createElement(out, name, content.getText(0, content.getLength()));
-						} catch (BadLocationException e) {
-							logger.error(e, e);
-						}
-					} else if (model instanceof JToggleButton.ToggleButtonModel) {
-						final boolean isSelected = ((JToggleButton.ToggleButtonModel)model).isSelected();
-						//TODO: constant for type = radio?
-						if (type.equals("radio") && isSelected) {
-							if (value != null) {
-								createElement(out, type, value);
-								//logger.info(type + "=" + value);
-							} else {	
-								createElement(out, type, name);
-								//logger.info(type + "=" + name);
+			final Processor 				processor 	= new Processor(context.getConfiguration());
+			final DocumentBuilder 			builder 	= processor.newDocumentBuilder();
+			
+			try {
+				BuildingStreamWriterImpl 	writer 		= builder.newBuildingStreamWriter();
+				final ElementIterator 		iterator 	= new ElementIterator(document);
+				Element 					element;
+				
+				while ((element = iterator.next()) != null) {
+					final AttributeSet 	atts 	= element.getAttributes();
+					final String        name 	= (String)atts.getAttribute(Attribute.NAME);
+					final String 		value 	= (String)atts.getAttribute(Attribute.VALUE);
+					final String 		type 	= (String)atts.getAttribute(Attribute.TYPE);
+					if (name != null) {
+						final Object model = atts.getAttribute(StyleConstants.ModelAttribute);
+						//logger.info("name: '" + name + "', model: " + model);
+						if (model instanceof PlainDocument) {
+							final PlainDocument content = (PlainDocument)model; 
+								//logger.info(name + ": '" + content.getText(0, content.getLength()) + "'");
+							try {
+								createElement(writer, name, content.getText(0, content.getLength()));
+							} catch (BadLocationException e) {
+								logger.error(e, e);
 							}
-						} else if (type.equals("checkbox")) {
-							createElement(out, name, String.valueOf(isSelected));
-							//logger.info(name + ": '" + isSelected + "'");
+						} else if (model instanceof JToggleButton.ToggleButtonModel) {
+							final boolean isSelected = ((JToggleButton.ToggleButtonModel)model).isSelected();
+							//TODO: constant for type = radio?
+							if (type.equals("radio") && isSelected) {
+								createElement(writer, name, value);
+								//logger.info(type + "=" + value);
+							} else if (type.equals("checkbox")) {
+								createElement(writer, name, String.valueOf(isSelected));
+								//logger.info(name + ": '" + isSelected + "'");
+							}
+						} else if (model instanceof DefaultComboBoxModel) {
+							//logger.info(name + ": '" + ((DefaultComboBoxModel)model).getSelectedItem() + "'");
+							createElement(writer, name, ((DefaultComboBoxModel)model).getSelectedItem().toString());
 						}
-					} else if (model instanceof DefaultComboBoxModel) {
-						//logger.info(name + ": '" + ((DefaultComboBoxModel)model).getSelectedItem() + "'");
-						createElement(out, name, ((DefaultComboBoxModel)model).getSelectedItem().toString());
 					}
 				}
+				createElement(writer, "button", pressedButton);
+				
+				return writer.getDocumentNode().getUnderlyingValue();
+				
+			} catch (SaxonApiException | XMLStreamException e) {
+				logger.error(e, e);
+				throw new XPathException("Failed to create return value: " + e.getMessage());
 			}
-			createElement(out, "button", pressedButton);
-			
-			Sequence output = SequenceTool.toLazySequence(out.iterate());
-			return output;
+		} 
+		
+		private void createElement(BuildingStreamWriterImpl writer, String name, String value) throws XPathException, XMLStreamException {
+			writer.writeStartElement(name);
+			writer.writeCharacters(value);
+			writer.writeEndElement();
 		}
 		
-		private void createElement(SequenceOutputter out, String name, String value) throws XPathException {
-			out.startElement(new NoNamespaceName(name), Untyped.getInstance(), locationId, 0);
-			out.characters(value, locationId, 0);
-			out.endElement();
-		}
           
 		private void saveState(String properties, Dimension size) {
 			try {
