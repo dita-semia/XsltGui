@@ -18,9 +18,57 @@
 					<xsl:sequence select="attribute()"/>	<!-- always keep the attributes -->
 					
 					<xsl:variable name="htmlResult">
-						<gui:html-dialog title="HTML Dialog" size="(200, 130)">
+						<gui:html-dialog title="HTML Dialog">
+							<table>
+								<tr>
+									<td>Edit field 1</td>
+									<td>
+										<input type="text" name="input1" size="20" value="Text"/>
+									</td>
+								</tr>
+								<tr>
+									<td>Edit field 2</td>
+									<td>
+										<input type="text" name="input2" size="20" value="More Text"/>
+									</td>
+								</tr>
+								<tr>
+									<td>Checkbox 1</td>
+									<td>
+										<input type="checkbox" name="checkbox1" checked="1"/>
+									</td>
+								</tr>
+								<tr>
+									<td>Checkbox 2</td>
+									<td>
+										<input type="checkbox" name="checkbox2"/>
+									</td>
+								</tr>
+								<tr>
+									<td>Radiobutton 1</td>
+									<td>
+										<input type="radio" name="radio" value="radio1" checked="1"/>
+									</td>
+								</tr>
+								<tr>
+									<td>Radiobutton 2</td>
+									<td>
+										<input type="radio" name="radio" value="radio2"/>
+									</td>
+								</tr>
+								<tr>
+									<td>Combobox</td>
+									<td>
+										<select name="combobox"> 
+											<option>Option 1</option>
+											<option selected="1">Option 2</option>
+											<option>Option 3</option>
+										</select>
+									</td>
+								</tr>
+							</table><!--
 							<p>Edit the text:</p>
-							<input type="text" name="text" size="200" value="{.}"/>
+							<input type="text" name="text" size="50" value="{.}"/>-->
 						</gui:html-dialog>
 					</xsl:variable>
 					

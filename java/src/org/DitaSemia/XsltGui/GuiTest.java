@@ -7,6 +7,18 @@ package org.DitaSemia.XsltGui;
 
 import java.awt.Frame;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JToggleButton;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.ElementIterator;
+import javax.swing.text.PlainDocument;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.html.HTML.Attribute;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -22,16 +34,24 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import net.sf.saxon.event.SequenceOutputter;
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.SimpleExpression;
 import net.sf.saxon.expr.StaticProperty;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.om.AxisInfo;
+import net.sf.saxon.om.NoNamespaceName;
 import net.sf.saxon.om.Sequence;
+import net.sf.saxon.om.SequenceTool;
+import net.sf.saxon.s9api.BuildingStreamWriterImpl;
+import net.sf.saxon.s9api.DocumentBuilder;
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.style.Compilation;
 import net.sf.saxon.style.ComponentDeclaration;
 import net.sf.saxon.style.ExtensionInstruction;
 import net.sf.saxon.trans.XPathException;
+import net.sf.saxon.type.Untyped;
 import net.sf.saxon.value.EmptySequence;
 
 import org.apache.log4j.Logger;
@@ -105,6 +125,48 @@ public class GuiTest extends ExtensionInstruction {
         }
 
         public Sequence call(XPathContext context, Sequence[] arguments) throws XPathException {
+
+        	final Processor 		processor 	= new Processor(context.getConfiguration());
+			final DocumentBuilder 	builder 	= processor.newDocumentBuilder();
+			
+			try {
+				BuildingStreamWriterImpl writer = builder.newBuildingStreamWriter();
+
+				writer.writeStartElement("test1");
+				writer.writeCharacters("text1");
+				writer.writeEndElement();
+				
+				writer.writeStartElement("test2");
+				writer.writeCharacters("text2");
+				writer.writeEndElement();
+				
+				return writer.getDocumentNode().getUnderlyingValue();
+				
+			} catch (SaxonApiException | XMLStreamException e) {
+				logger.error(e, e);
+				throw new XPathException("Failed to create return value: " + e.getMessage());
+			}
+        }
+			
+		public Sequence call2(XPathContext context, Sequence[] arguments) throws XPathException {
+        	
+        	final SequenceOutputter out = context.getController().allocateSequenceOutputter(50);
+        	
+        	out.startElement(new NoNamespaceName("test1"), Untyped.getInstance(), locationId, 0);
+        	out.startContent();
+			out.characters("text1", locationId, 0);
+			out.endElement();
+			
+			out.startElement(new NoNamespaceName("test2"), Untyped.getInstance(), locationId, 0);
+			out.startContent();
+			out.characters("text2", locationId, 0);
+			out.endElement();
+			
+			return out.getSequence();
+		}
+		
+		public Sequence call3(XPathContext context, Sequence[] arguments) throws XPathException {
+			
         	logger.info("call");
         	try {
             FXThread fxThread = new FXThread();

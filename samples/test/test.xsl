@@ -9,7 +9,7 @@
 	
 	<xsl:template match="/">
 		
-		<xsl:variable name="var1" as="element()">
+		<!--<xsl:variable name="var1" as="element()">
 			<var1>Text</var1>
 		</xsl:variable>
 		<xsl:variable name="var2" as="element()">
@@ -33,7 +33,15 @@
 					<xsl:sequence select="$var2"/>
 				</root>
 			</gui:test>
-		</xsl:message>
+		</xsl:message>-->
+		
+		<xsl:variable name="result" as="document-node()">
+			<!--<test1>text1</test1>
+			<test2>text2</test2>-->
+			<gui:test select="."/>
+		</xsl:variable>
+		<xsl:message>test1: <xsl:value-of select="$result/test1"/></xsl:message>
+		<xsl:message>test2: <xsl:value-of select="$result/test2"/></xsl:message>
 		
 		<xsl:message>Done!</xsl:message>
 		

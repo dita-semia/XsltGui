@@ -44,9 +44,10 @@
 		<xsl:choose>
 			<xsl:when test="$htmlResult/self::button = $BUTTON_OK">
 				<xsl:value-of select="$htmlResult/self::text"/>
+				<xsl:message>Test</xsl:message>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:sequence select="node()"/>
+				<xsl:message terminate="yes">Abort by user.</xsl:message>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>

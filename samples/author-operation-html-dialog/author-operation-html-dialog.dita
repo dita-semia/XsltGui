@@ -4,6 +4,6 @@
   xsi:noNamespaceSchemaLocation="urn:oasis:names:tc:dita:xsd:topic.xsd">
   <title>Title</title>
   <body>
-		<p id="vzd_klj_z5">Some text content.</p>
+		<p id="vzd_klj_z5"/>
   </body>
 </topic>
