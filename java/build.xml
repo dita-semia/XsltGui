@@ -3,7 +3,7 @@
 
 	<property name="archivename" value="DitaSemiaXsltGui" />
 	<property name="src.dir" value="src"/>
-	<property name="oxygen.lib.dir" value="${OXYGENXML}/lib"/>
+	<property name="oxygen.lib.dir" value="${OXYGENXML16.1}/lib"/>
 
 	<path id="classpath">
 		<fileset dir="${oxygen.lib.dir}" 		includes="**/*.jar"/>
@@ -15,7 +15,7 @@
 
 	<target name="compile">
 		<mkdir dir="bin"/>
-		<javac srcdir="src" target="1.8" source="1.8" destdir="bin" classpathref="classpath" debug="true" debuglevel="lines,source" includeantruntime="no"/>
+		<javac srcdir="src" target="1.7" source="1.7" destdir="bin" classpathref="classpath" debug="true" debuglevel="lines,source" includeantruntime="no"/>
 	</target>
 
 	<target name="jar" description="Kreieren eines JAR Archives Project
@@ -34,6 +34,6 @@
 		</jar>
 
 		<delete file="${OXYGENXML}/lib/${archivename}.jar"/>
-		<copy file="${archivename}.jar" todir="${OXYGENXML}/lib"/>
+		<copy file="${archivename}.jar" todir="${OXYGENXML16.1}/lib"/>
 	</target>
 </project>

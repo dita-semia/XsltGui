@@ -13,16 +13,17 @@ import org.apache.log4j.Logger;
 
 import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
 import net.sf.saxon.expr.*;
+import net.sf.saxon.expr.instruct.Executable;
 import net.sf.saxon.om.AxisInfo;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.Sequence;
 import net.sf.saxon.om.SequenceIterator;
-import net.sf.saxon.style.Compilation;
-import net.sf.saxon.style.ComponentDeclaration;
+import net.sf.saxon.style.Declaration;
 import net.sf.saxon.style.ExtensionInstruction;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.EmptySequence;
 
+@SuppressWarnings({ "serial", "unchecked" })
 public class GuiMessageDialog extends ExtensionInstruction {
 
 	@SuppressWarnings("unused")
@@ -66,7 +67,7 @@ public class GuiMessageDialog extends ExtensionInstruction {
     }
 
 	@Override
-    public void validate(ComponentDeclaration decl) throws XPathException {
+    public void validate(Declaration decl) throws XPathException {
         super.validate(decl);
         title	= typeCheck("title", 	title);
         if (text != null) {
@@ -81,7 +82,7 @@ public class GuiMessageDialog extends ExtensionInstruction {
     }
 
 	@Override
-    public Expression compile(Compilation exec, ComponentDeclaration decl) throws XPathException {
+    public Expression compile(Executable exec, Declaration decl) throws XPathException {
 		if (text == null) {
 			text = compileSequenceConstructor(exec, decl, iterateAxis(AxisInfo.CHILD), false);
 		}
@@ -116,7 +117,7 @@ public class GuiMessageDialog extends ExtensionInstruction {
             final String iconString 	= arguments[ICON].head().getStringValue();
             
             String textString = "";
-            SequenceIterator iterator = arguments[TEXT].iterate();
+            SequenceIterator<? extends Item> iterator = arguments[TEXT].iterate();
 			Item item = iterator.next();
 			while (item != null) {
 				textString += item.getStringValue();

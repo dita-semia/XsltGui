@@ -39,6 +39,7 @@ import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.SimpleExpression;
 import net.sf.saxon.expr.StaticProperty;
 import net.sf.saxon.expr.XPathContext;
+import net.sf.saxon.expr.instruct.Executable;
 import net.sf.saxon.om.AxisInfo;
 import net.sf.saxon.om.NoNamespaceName;
 import net.sf.saxon.om.Sequence;
@@ -47,8 +48,7 @@ import net.sf.saxon.s9api.BuildingStreamWriterImpl;
 import net.sf.saxon.s9api.DocumentBuilder;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.style.Compilation;
-import net.sf.saxon.style.ComponentDeclaration;
+import net.sf.saxon.style.Declaration;
 import net.sf.saxon.style.ExtensionInstruction;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.Untyped;
@@ -60,6 +60,7 @@ import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
 
 import com.sun.javafx.application.PlatformImpl;
 
+@SuppressWarnings({ "serial", "unchecked" })
 public class GuiTest extends ExtensionInstruction {
 
 //	@SuppressWarnings("unused")
@@ -81,7 +82,7 @@ public class GuiTest extends ExtensionInstruction {
 
 
 	@Override
-    public void validate(ComponentDeclaration decl) throws XPathException {
+    public void validate(Declaration decl) throws XPathException {
         super.validate(decl);
 
         if (select != null) {
@@ -97,7 +98,7 @@ public class GuiTest extends ExtensionInstruction {
 	
 	
 	@Override
-    public Expression compile(Compilation exec, ComponentDeclaration decl) throws XPathException {
+    public Expression compile(Executable exec, Declaration decl) throws XPathException {
 
 		if (select == null) {
 			select = compileSequenceConstructor(exec, decl, iterateAxis(AxisInfo.CHILD), false);
@@ -214,11 +215,11 @@ public class GuiTest extends ExtensionInstruction {
 		public FXThread() {
 			
 		}
-		
+
 		@Override
 		public void run() {
 			try{ 
-			Stage primaryStage 		= new Stage();
+			final Stage primaryStage 		= new Stage();
 			primaryStage.getIcons().add(new Image("file:C:/Program Files/Oxygen XML Editor 17.0/Oxygen128.png"));
     		HBox 		hbox		= new HBox(10);
 			hbox.setPadding(new Insets(10, 10, 10, 10));
@@ -242,8 +243,8 @@ public class GuiTest extends ExtensionInstruction {
 										"<input type=\"submit\" value=\"Confirm\"/>" +
 										"<input type=\"reset\" value=\"Reset\"/>" +
 									"<form>"); 
-			Button button1 = new Button("Button 1");
-			Button button2 = new Button("Button 2");
+			final Button button1 = new Button("Button 1");
+			final Button button2 = new Button("Button 2");
 			hbox.getChildren().add(button1);
 			hbox.getChildren().add(button2);
 			button1.setOnAction(new EventHandler<ActionEvent>() {

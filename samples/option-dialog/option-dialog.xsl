@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="3.0"
+<xsl:stylesheet version="2.0"
 	xmlns:xsl	= "http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs	= "http://www.w3.org/2001/XMLSchema"
 	xmlns:gui	= "http://www.dita-semia.org/xslt-gui"
 	extension-element-prefixes	= "gui"
-	exclude-result-prefixes		= "#all"
-	expand-text					= "yes">
+	exclude-result-prefixes		= "#all">
 	
 	
 	<xsl:variable name="OPTION_FIRST_CHILD"		as="xs:string" select="'First Child'"/>
@@ -26,17 +25,17 @@
 		<xsl:param name="Element" as="element()"/>
 		
 		<xsl:variable name="OptionList" as="xs:string+">
-			<xsl:if test="exists($Element/child::*)">{$OPTION_FIRST_CHILD}</xsl:if>
-			<xsl:if test="exists($Element/following-sibling::*)">{$OPTION_NEXT_SIBLING}</xsl:if>
-			{$OPTION_ABORT}
+			<xsl:if test="exists($Element/child::*)"><xsl:value-of select="$OPTION_FIRST_CHILD"/></xsl:if>
+			<xsl:if test="exists($Element/following-sibling::*)"><xsl:value-of select="$OPTION_NEXT_SIBLING"/></xsl:if>
+			<xsl:value-of select="$OPTION_ABORT"/>
 		</xsl:variable>
 		
 		<xsl:choose>
 			<xsl:when test="count($OptionList) le 1">
 				
 				<gui:message-dialog title="Option-Dialog Test" icon="warning">
-					<xsl:text>The name of the current element is '{name($Element)}'.&#x0A;</xsl:text>
-					<xsl:text>The end of this traversal is reached.</xsl:text> 
+					<xsl:text/>The name of the current element is '<xsl:value-of select="name($Element)"/>'.&#x0A;<xsl:text/>
+					<xsl:text/>The end of this traversal is reached.<xsl:text/> 
 				</gui:message-dialog>
 				
 			</xsl:when>
@@ -44,8 +43,8 @@
 				
 				<xsl:variable name="Selection" as="xs:integer">
 					<gui:option-dialog title="Option-Dialog Test" icon="question" options="$OptionList">
-						<xsl:text>The name of the current element is '{name($Element)}'.&#x0A;</xsl:text>
-						<xsl:text>Where to go next?</xsl:text> 
+						<xsl:text/>The name of the current element is '<xsl:value-of select="name($Element)"/>'.&#x0A;<xsl:text/>
+						<xsl:text/>Where to go next?<xsl:text/> 
 					</gui:option-dialog>
 				</xsl:variable>
 				

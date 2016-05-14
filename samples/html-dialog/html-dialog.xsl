@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="3.0"
+<xsl:stylesheet version="2.0"
     xmlns:xsl	= "http://www.w3.org/1999/XSL/Transform"
     xmlns:xs	= "http://www.w3.org/2001/XMLSchema"
     xmlns:gui	= "http://www.dita-semia.org/xslt-gui"
-    extension-element-prefixes	= "gui"
-    expand-text					= "yes">
+    extension-element-prefixes	= "gui">
     
 	<xsl:template match="/">
         
         <xsl:variable name="htmlResult" as="document-node()">
-        	<gui:html-dialog  block-parent="yes" resizable="true">
+        	<gui:html-dialog title="HTML Dialog" block-parent="yes" resizable="true">
         		<form action="#">
         			<table>
         				<tr>

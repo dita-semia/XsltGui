@@ -1,3 +1,7 @@
+/*
+ * This file is part of the DITA-SEMIA project (www.dita-semia.org).
+ * See the accompanying LICENSE file for applicable licenses.
+ */
 package org.DitaSemia.XsltGui;
 
 import java.net.MalformedURLException;
@@ -7,11 +11,11 @@ import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.SimpleExpression;
 import net.sf.saxon.expr.StaticProperty;
 import net.sf.saxon.expr.XPathContext;
+import net.sf.saxon.expr.instruct.Executable;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.om.Sequence;
-import net.sf.saxon.style.Compilation;
-import net.sf.saxon.style.ComponentDeclaration;
+import net.sf.saxon.style.Declaration;
 import net.sf.saxon.style.ExtensionInstruction;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.EmptySequence;
@@ -22,6 +26,7 @@ import ro.sync.exml.editor.EditorPageConstants;
 import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
 import ro.sync.exml.workspace.api.Workspace;
 
+@SuppressWarnings({ "serial", "unchecked" })
 public class GuiOpenFile extends ExtensionInstruction {
 
 //	@SuppressWarnings("unused")
@@ -53,14 +58,14 @@ public class GuiOpenFile extends ExtensionInstruction {
 	}
 
 	@Override
-    public void validate(ComponentDeclaration decl) throws XPathException {
+    public void validate(Declaration decl) throws XPathException {
         super.validate(decl);
 //        url 			= typeCheck("url", 	url);
         view 			= typeCheck("view", view);
     }
 
 	@Override
-    public Expression compile(Compilation exec, ComponentDeclaration decl) throws XPathException {
+    public Expression compile(Executable exec, Declaration decl) throws XPathException {
         return new OpenFileInstruction(url, view);
     }
 	

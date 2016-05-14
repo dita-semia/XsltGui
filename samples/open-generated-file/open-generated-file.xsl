@@ -5,8 +5,7 @@
     xmlns:gui                   = "http://www.dita-semia.org/xslt-gui"
     extension-element-prefixes  = "gui"
     exclude-result-prefixes     = "xs"
-    expand-text                 = "yes"
-    version                     = "3.0">
+    version                     = "2.0">
 	
 	<xsl:variable name="FILENAME_TEMP" 		as="xs:string" select="'temp.xhtml'"/>
 	<xsl:variable name="FILENAME_RESULT" 	as="xs:string" select="'result.xhtml'"/>
@@ -20,7 +19,7 @@
     		<p>Timestamp: &lt;<xsl:value-of select="current-dateTime()"/>&gt;</p>
     		<ul>
 	    		<xsl:for-each select="1 to 100">
-	    			<li>Data #{.}</li>
+	    			<li>Data #<xsl:value-of select="."/></li>
 	    		</xsl:for-each>
     		</ul>
     	</xsl:variable>

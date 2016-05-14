@@ -41,6 +41,7 @@ import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.SimpleExpression;
 import net.sf.saxon.expr.StaticProperty;
 import net.sf.saxon.expr.XPathContext;
+import net.sf.saxon.expr.instruct.Executable;
 import net.sf.saxon.om.AxisInfo;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.NodeInfo;
@@ -51,8 +52,7 @@ import net.sf.saxon.s9api.BuildingStreamWriterImpl;
 import net.sf.saxon.s9api.DocumentBuilder;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.style.Compilation;
-import net.sf.saxon.style.ComponentDeclaration;
+import net.sf.saxon.style.Declaration;
 import net.sf.saxon.style.ExtensionInstruction;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.EmptySequence;
@@ -64,6 +64,7 @@ import org.apache.log4j.Logger;
 import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
 import ro.sync.exml.workspace.api.options.WSOptionsStorage;
 
+@SuppressWarnings({ "serial", "unchecked" })
 public class GuiHtmlDialog extends ExtensionInstruction {
 
 	//@SuppressWarnings("unused")
@@ -169,7 +170,7 @@ public class GuiHtmlDialog extends ExtensionInstruction {
     }
 
 	@Override
-    public void validate(ComponentDeclaration decl) throws XPathException {
+    public void validate(Declaration decl) throws XPathException {
 		//logger.info("validate");
         super.validate(decl);
         title 			= typeCheck("title", 			title);
@@ -193,7 +194,7 @@ public class GuiHtmlDialog extends ExtensionInstruction {
     }
 	
 	@Override
-    public Expression compile(Compilation exec, ComponentDeclaration decl) throws XPathException {
+    public Expression compile(Executable exec, Declaration decl) throws XPathException {
 		if (html == null) {
 			html = compileSequenceConstructor(exec, decl, iterateAxis(AxisInfo.CHILD), false);
 		}
@@ -309,8 +310,8 @@ public class GuiHtmlDialog extends ExtensionInstruction {
         	if (arguments[SIZE].head().getStringValue().isEmpty()) {
         		return null;
         	}
-        	SequenceIterator 	iterator = arguments[SIZE].iterate();
-        	ArrayList<Integer> 	sizeList = new ArrayList<Integer>();
+        	SequenceIterator<? extends Item> 	iterator = arguments[SIZE].iterate();
+        	ArrayList<Integer> 					sizeList = new ArrayList<Integer>();
             Item item = iterator.next();
             while (item != null) {
             	if (!(item instanceof IntegerValue)) {
@@ -328,7 +329,7 @@ public class GuiHtmlDialog extends ExtensionInstruction {
         
         private String[] getButtons(Sequence[] arguments) throws XPathException {
         	//logger.info("getButtons: " + arguments[BUTTONS].toString());
-        	SequenceIterator iterator = arguments[BUTTONS].iterate();
+        	SequenceIterator<? extends Item> iterator = arguments[BUTTONS].iterate();
         	List<String> buttonsList = new LinkedList<>();
         	Item item = iterator.next();
         	while (item != null) {
@@ -344,7 +345,7 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 			//logger.info("generateHTML");
 			String htmlString = "";
 			try {
-				SequenceIterator iterator = arguments[HTML].iterate();
+				SequenceIterator<? extends Item> iterator = arguments[HTML].iterate();
 			
 				Item item = iterator.next();
 				while (item != null) {
@@ -378,10 +379,10 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 			//	")");
 			final Frame		frame		= (Frame)PluginWorkspaceProvider.getPluginWorkspace().getParentFrame();
 			
-			JDialog 		dialog 		= new JDialog(frame, title, true);
-			JTextPane 		textPane 	= new JTextPane();
-			JPanel		 	buttonPane 	= new JPanel();
-			JScrollPane 	scrollPane 	= new JScrollPane(textPane);
+			final JDialog 		dialog 		= new JDialog(frame, title, true);
+			final JTextPane 	textPane 	= new JTextPane();
+			final JPanel	 	buttonPane 	= new JPanel();
+			final JScrollPane 	scrollPane 	= new JScrollPane(textPane);
 			
 			
 	        //create buttons
@@ -449,11 +450,11 @@ public class GuiHtmlDialog extends ExtensionInstruction {
 			}
 		}
 		
-		private void addButtons(JPanel panel, String[] buttons, JTextPane textPane, JDialog dialog, String properties) {
+		private void addButtons(JPanel panel, String[] buttons, final JTextPane textPane, final JDialog dialog, final String properties) {
 			//logger.info("addButtons: " + Arrays.toString(buttons));
 			panel.add(Box.createGlue());
 			for (String s : buttons) {
-				JButton button = new JButton(s);
+				final JButton button = new JButton(s);
 				button.addActionListener(new ActionListener() {
 
 					@Override

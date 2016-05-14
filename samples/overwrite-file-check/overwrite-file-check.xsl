@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="3.0"
+<xsl:stylesheet version="2.0"
 	xmlns:xsl	= "http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs	= "http://www.w3.org/2001/XMLSchema"
 	xmlns:gui	= "http://www.dita-semia.org/xslt-gui"
 	xmlns:ds	= "http://www.dita-semia.org"
 	extension-element-prefixes	= "gui"
-	exclude-result-prefixes		= "#all"
-	expand-text					= "yes">
+	exclude-result-prefixes		= "#all">
 	
 	
 	<xsl:template match="/">
